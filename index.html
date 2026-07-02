@@ -66,18 +66,18 @@
         }
 
         .container {
-            margin: 84px 0 0 0;
+            margin: 24px 0 0 0;
             width: 100%;
             max-width: 980px;
             overflow: hidden;
             padding: 0;
         }
 
-        /* Header */
+        /* Header — glass */
         .header {
-            background: var(--surface);
+            background: rgba(255, 255, 255, 0.68);
             color: var(--ink);
-            padding: 14px 24px;
+            padding: 18px 24px;
             display: flex;
             align-items: center;
             position: fixed;
@@ -85,7 +85,10 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 30px rgba(20, 24, 31, 0.06);
         }
 
         .route-selector {
@@ -233,20 +236,43 @@
         .destination-bg {
             position: relative;
             width: 100%;
-            height: 160px;
+            height: 200px;
             background-size: cover;
             background-position: center;
             opacity: 1;
             border-radius: var(--border-radius);
             margin-bottom: 20px;
+            cursor: zoom-in;
         }
 
         .destination-bg::after {
             content: "";
             position: absolute;
             inset: 0;
+            z-index: 1;
             border-radius: var(--border-radius);
             background: linear-gradient(180deg, rgba(20,24,31,0) 40%, rgba(20,24,31,0.45) 100%);
+        }
+
+        .destination-bg::before {
+            content: "\f065";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            pointer-events: none;
         }
 
         .destination-content {
@@ -721,6 +747,54 @@
             to { transform: scale(0.96); opacity: 0; }
         }
 
+        /* Fullscreen image viewer */
+        .fullscreen-viewer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 12, 16, 0.94);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            cursor: zoom-out;
+            animation: fadeIn 0.2s ease forwards;
+        }
+
+        .fullscreen-viewer.active { display: flex; }
+
+        .fullscreen-viewer-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            cursor: default;
+            transform: scale(0.98);
+            opacity: 0;
+            animation: zoomIn 0.25s ease forwards;
+        }
+
+        .fullscreen-close {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .fullscreen-close:hover { background: rgba(255, 255, 255, 0.22); }
+
         /* Responsive design for bus images */
         @media (max-width: 768px) {
             .bus-image-row { flex-direction: column; }
@@ -753,8 +827,8 @@
         }
 
         @media (max-width: 600px) {
-            .container { margin-top: 100px; }
-            .header { padding: 15px; }
+            .container { margin-top: 16px; }
+            .header { padding: 14px 15px; }
             .content { padding: 15px; }
 
             table { display: block; overflow-x: auto; }
@@ -765,7 +839,7 @@
                 gap: 8px;
             }
 
-            .destination-bg { height: 120px; }
+            .destination-bg { height: 200px; }
         }
 
         /* Low-end / reduced-motion: strip animation entirely, keep instant state changes */
@@ -774,6 +848,97 @@
                 animation-duration: 0.001s !important;
                 animation-delay: 0s !important;
                 transition-duration: 0.001s !important;
+            }
+        }
+
+        /* Print — Letter sheet (8.5 x 11in) with margins tuned to a
+           166.04mm x 254.58mm printable area */
+        @page {
+            size: 215.9mm 279.4mm;
+            margin: 12.41mm 24.93mm;
+        }
+
+        @media print {
+            * , *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            html, body {
+                background: #ffffff;
+                padding: 0;
+                display: block;
+                width: 166.04mm;
+            }
+
+            /* Interactive chrome has no place on paper */
+            .header,
+            .swipe-arrows,
+            .swipe-indicators,
+            .destination-dropdown,
+            .view-btn,
+            .modal,
+            .fullscreen-viewer,
+            .destination-bg::before {
+                display: none !important;
+            }
+
+            .container {
+                margin: 0;
+                width: 166.04mm;
+                max-width: 166.04mm;
+            }
+
+            .content { padding: 0; }
+
+            /* Show every destination stacked, one per page, instead of
+               the single active swipe slide */
+            .swipe-wrapper {
+                display: block;
+                transform: none !important;
+                width: 100%;
+            }
+
+            .destination-section {
+                min-width: 100%;
+                width: 100%;
+                page-break-after: always;
+                break-after: page;
+            }
+
+            .destination-section:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+
+            /* Decorative photo wastes ink and can misprint — drop it */
+            .destination-bg { display: none !important; }
+            .destination-content { margin: 0; }
+
+            table {
+                border: 1px solid #000;
+                width: 100%;
+            }
+
+            thead { background: #f0f0f0 !important; }
+
+            th, td { color: #000 !important; }
+
+            .transport-icon {
+                background: none !important;
+                border: 1px solid #000;
+                color: #000 !important;
+            }
+
+            .departure-time { background: #fff !important; border: 1px solid #ccc; }
+            .price { color: #000 !important; }
+
+            .table-scale, .facility-item, .bus-image-item {
+                opacity: 1 !important;
+                transform: none !important;
             }
         }
     </style>
@@ -1546,6 +1711,14 @@
         </div>
     </div>
 
+    <!-- Fullscreen Image Viewer -->
+    <div class="fullscreen-viewer" id="fullscreenViewer">
+        <button class="fullscreen-close" id="fullscreenClose" aria-label="Close fullscreen">
+            <i class="fas fa-times"></i>
+        </button>
+        <img class="fullscreen-viewer-img" id="fullscreenImg" src="" alt="">
+    </div>
+
     <script>
     // Swipe functionality
     let currentSlide = 0;
@@ -1629,13 +1802,17 @@
         document.querySelector('.prev-arrow').addEventListener('click', prevSlide);
         document.querySelector('.next-arrow').addEventListener('click', nextSlide);
 
-        // Live drag-following swipe, throttled to one transform write per frame
+        // Live drag-following swipe, throttled to one transform write per frame.
+        // A drag only "engages" once movement passes a small threshold, so plain
+        // clicks/taps never trigger a swipe transform or snap animation.
         let startX = 0;
         let currentX = 0;
+        let pointerActive = false;
         let isDragging = false;
         let containerWidth = 0;
         let rafId = null;
         let pendingTransform = null;
+        const moveThreshold = 6;
 
         function flushTransform() {
             rafId = null;
@@ -1657,20 +1834,36 @@
             containerWidth = swipeWrapper.parentElement.offsetWidth;
             startX = x;
             currentX = x;
-            isDragging = true;
-            swipeWrapper.classList.add('dragging');
+            pointerActive = true;
+            isDragging = false;
         }
 
         function dragMove(x) {
-            if (!isDragging) return;
+            if (!pointerActive) return;
             currentX = x;
             const delta = currentX - startX;
+
+            if (!isDragging) {
+                if (Math.abs(delta) < moveThreshold) return;
+                // Movement just crossed the threshold — engage the drag now
+                isDragging = true;
+                swipeWrapper.classList.add('dragging');
+            }
+
             const base = -currentSlide * containerWidth;
             queueTransform(`translate3d(${base + delta}px, 0, 0)`);
         }
 
         function dragEnd() {
-            if (!isDragging) return;
+            if (!pointerActive) return;
+            pointerActive = false;
+
+            if (!isDragging) {
+                // Never moved past the threshold — it was a click/tap, not a swipe.
+                // Leave the transform untouched and skip any snap animation.
+                return;
+            }
+
             isDragging = false;
             swipeWrapper.classList.remove('dragging');
             if (rafId !== null) {
@@ -1701,7 +1894,7 @@
         swipeWrapper.addEventListener('pointerup', dragEnd);
         swipeWrapper.addEventListener('pointercancel', dragEnd);
         swipeWrapper.addEventListener('pointerleave', () => {
-            if (isDragging) dragEnd();
+            if (pointerActive) dragEnd();
         });
     }
 
@@ -2047,10 +2240,76 @@
         });
     });
     
+    // Fullscreen image viewer
+    function setupFullscreenViewer() {
+        const viewer = document.getElementById('fullscreenViewer');
+        const viewerImg = document.getElementById('fullscreenImg');
+        const closeBtn = document.getElementById('fullscreenClose');
+
+        function openViewer(url, alt) {
+            viewerImg.src = url;
+            viewerImg.alt = alt || 'Destination photo';
+            viewer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Use the real Fullscreen API where available for a true
+            // immersive view; silently fall back to the overlay if not.
+            if (viewer.requestFullscreen) {
+                viewer.requestFullscreen().catch(() => {});
+            } else if (viewer.webkitRequestFullscreen) {
+                viewer.webkitRequestFullscreen();
+            }
+        }
+
+        function closeViewer() {
+            viewer.classList.remove('active');
+            document.body.style.overflow = '';
+            viewerImg.src = '';
+
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitFullscreenElement) {
+                document.webkitExitFullscreen();
+            }
+        }
+
+        // Click any destination banner to view its photo fullscreen
+        document.querySelectorAll('.destination-bg').forEach((bg) => {
+            bg.addEventListener('click', () => {
+                const bgImage = getComputedStyle(bg).backgroundImage;
+                const match = bgImage.match(/url\(["']?(.*?)["']?\)/);
+                if (match && match[1]) {
+                    const sectionId = bg.closest('.destination-section')?.id || '';
+                    const label = sectionId.replace('-section', '').replace(/-/g, ' ');
+                    openViewer(match[1], label);
+                }
+            });
+        });
+
+        closeBtn.addEventListener('click', closeViewer);
+
+        // Click the dark backdrop (not the image itself) to close
+        viewer.addEventListener('click', (e) => {
+            if (e.target === viewer) closeViewer();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && viewer.classList.contains('active')) closeViewer();
+        });
+
+        // Keep the overlay in sync if the browser exits fullscreen on its own
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && viewer.classList.contains('active')) {
+                closeViewer();
+            }
+        });
+    }
+
     // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
         initSwipe();
         setupViewButtons();
+        setupFullscreenViewer();
         // Trigger initial table animation
         animateTables();
     });
