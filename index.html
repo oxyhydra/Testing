@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        /* CSS */
+        /* ===== Modern / Simple design system ===== */
         :root {
             --ink: #14181f;
             --ink-soft: #4b5262;
@@ -26,7 +26,7 @@
             --border-radius-sm: 8px;
             --shadow: 0 1px 2px rgba(20,24,31,0.04), 0 8px 24px rgba(20,24,31,0.06);
             --shadow-sm: 0 1px 3px rgba(20,24,31,0.06);
-            --transition: all 0.2s ease;
+            --transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
         }
 
         * {
@@ -145,11 +145,10 @@
             font-weight: 500;
             cursor: pointer;
             width: 210px;
-            transition: var(--transition);
+            transition: border-color 0.15s ease, background-color 0.15s ease;
         }
 
         .search-input:focus {
-            width: 250px;
             outline: none;
             border-color: var(--accent);
             background: var(--surface);
@@ -213,8 +212,13 @@
 
         .swipe-wrapper {
             display: flex;
-            transition: transform 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
             width: 100%;
+        }
+
+        .swipe-wrapper.dragging {
+            transition: none;
+            will-change: transform;
         }
 
         .destination-section {
@@ -346,17 +350,15 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--line);
             background: var(--surface);
-            transform-origin: center;
-            transition: transform 0.3s ease;
         }
 
         .table-scale {
-            animation: scaleIn 0.35s ease forwards;
+            animation: scaleIn 0.2s ease forwards;
         }
 
         @keyframes scaleIn {
-            0% { transform: scale(0.98); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
         }
 
         thead {
@@ -383,6 +385,8 @@
         }
 
         tbody tr:last-child { border-bottom: none; }
+
+        tbody tr:hover { background-color: var(--bg); }
 
         tbody { background: var(--surface); }
 
@@ -745,24 +749,32 @@
                 border-bottom: 1px solid var(--line);
             }
 
-            .swipe-arrow { display: none; }
+            .swipe-arrows { display: none; }
         }
 
         @media (max-width: 600px) {
-            .container { margin-top: 128px; }
-            .header { padding: 12px; }
-            .content { padding: 0; }
+            .container { margin-top: 100px; }
+            .header { padding: 15px; }
+            .content { padding: 15px; }
 
             table { display: block; overflow-x: auto; }
 
             .transport-type {
-                flex-direction: row;
-                align-items: center;
-                gap: 10px;
-                width: auto;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
             }
 
             .destination-bg { height: 120px; }
+        }
+
+        /* Low-end / reduced-motion: strip animation entirely, keep instant state changes */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001s !important;
+                animation-delay: 0s !important;
+                transition-duration: 0.001s !important;
+            }
         }
     </style>
 </head>
@@ -1616,84 +1628,80 @@
         // Add event listeners for arrow buttons
         document.querySelector('.prev-arrow').addEventListener('click', prevSlide);
         document.querySelector('.next-arrow').addEventListener('click', nextSlide);
-        
-        // Touch swipe functionality
+
+        // Live drag-following swipe, throttled to one transform write per frame
         let startX = 0;
-        let endX = 0;
-        let isSwiping = false;
-        
-        swipeWrapper.addEventListener('touchstart', (e) => {
-            // Only start swipe if not on a button
-            if (!e.target.closest('.view-btn')) {
-                startX = e.touches[0].clientX;
-                isSwiping = true;
+        let currentX = 0;
+        let isDragging = false;
+        let containerWidth = 0;
+        let rafId = null;
+        let pendingTransform = null;
+
+        function flushTransform() {
+            rafId = null;
+            if (pendingTransform !== null) {
+                swipeWrapper.style.transform = pendingTransform;
+                pendingTransform = null;
             }
-        });
-        
-        swipeWrapper.addEventListener('touchmove', (e) => {
-            if (isSwiping) {
-                endX = e.touches[0].clientX;
+        }
+
+        function queueTransform(value) {
+            pendingTransform = value;
+            if (rafId === null) {
+                rafId = requestAnimationFrame(flushTransform);
             }
-        });
-        
-        swipeWrapper.addEventListener('touchend', () => {
-            if (isSwiping) {
-                const diffX = startX - endX;
-                const minSwipeDistance = 50;
-                
-                if (Math.abs(diffX) > minSwipeDistance) {
-                    if (diffX > 0) {
-                        // Swiped left
-                        nextSlide();
-                    } else {
-                        // Swiped right
-                        prevSlide();
-                    }
-                }
-                isSwiping = false;
+        }
+
+        function dragStart(x, target) {
+            if (target.closest('.view-btn')) return;
+            containerWidth = swipeWrapper.parentElement.offsetWidth;
+            startX = x;
+            currentX = x;
+            isDragging = true;
+            swipeWrapper.classList.add('dragging');
+        }
+
+        function dragMove(x) {
+            if (!isDragging) return;
+            currentX = x;
+            const delta = currentX - startX;
+            const base = -currentSlide * containerWidth;
+            queueTransform(`translate3d(${base + delta}px, 0, 0)`);
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            swipeWrapper.classList.remove('dragging');
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+                pendingTransform = null;
             }
-        });
-        
-        // Mouse swipe functionality
-        let mouseStartX = 0;
-        let mouseEndX = 0;
-        let isMouseSwiping = false;
-        
-        swipeWrapper.addEventListener('mousedown', (e) => {
-            // Only start swipe if not clicking a button
-            if (!e.target.closest('.view-btn')) {
-                mouseStartX = e.clientX;
-                isMouseSwiping = true;
+
+            const diffX = startX - currentX;
+            const minSwipeDistance = Math.min(60, containerWidth * 0.15);
+
+            if (Math.abs(diffX) > minSwipeDistance) {
+                diffX > 0 ? nextSlide() : prevSlide();
+            } else {
+                // Not far enough — snap back to the current slide
+                goToSlide(currentSlide);
             }
+        }
+
+        swipeWrapper.addEventListener('pointerdown', (e) => {
+            dragStart(e.clientX, e.target);
         });
-        
-        swipeWrapper.addEventListener('mousemove', (e) => {
-            if (isMouseSwiping) {
-                mouseEndX = e.clientX;
-            }
-        });
-        
-        swipeWrapper.addEventListener('mouseup', (e) => {
-            if (isMouseSwiping) {
-                const diffX = mouseStartX - mouseEndX;
-                const minSwipeDistance = 50;
-                
-                if (Math.abs(diffX) > minSwipeDistance) {
-                    if (diffX > 0) {
-                        // Swiped left
-                        nextSlide();
-                    } else {
-                        // Swiped right
-                        prevSlide();
-                    }
-                }
-                isMouseSwiping = false;
-            }
-        });
-        
-        // Prevent mouse swipe from interfering with clicks
-        swipeWrapper.addEventListener('mouseleave', () => {
-            isMouseSwiping = false;
+
+        swipeWrapper.addEventListener('pointermove', (e) => {
+            dragMove(e.clientX);
+        }, { passive: true });
+
+        swipeWrapper.addEventListener('pointerup', dragEnd);
+        swipeWrapper.addEventListener('pointercancel', dragEnd);
+        swipeWrapper.addEventListener('pointerleave', () => {
+            if (isDragging) dragEnd();
         });
     }
 
@@ -1948,16 +1956,6 @@
                     // Show modal with animation
                     modal.style.display = 'flex';
                     modal.classList.remove('closing');
-                    
-                    // Reset animations for next time
-                    setTimeout(() => {
-                        const elements = modal.querySelectorAll('[style*="animation"]');
-                        elements.forEach(el => {
-                            el.style.animation = 'none';
-                            void el.offsetWidth; // Trigger reflow
-                            el.style.animation = '';
-                        });
-                    }, 10);
                 }
             });
             
@@ -1990,18 +1988,6 @@
                 modal.classList.remove('closing');
             }, 300);
         }
-    });
-
-    // Row hover effects
-    document.querySelectorAll('tbody tr').forEach(row => {
-        row.addEventListener('mouseenter', () => {
-            row.style.transform = 'translateY(0px)';
-            row.style.boxShadow = '0 4px 8px rgba(0,0,0,0.05)';
-        });
-        row.addEventListener('mouseleave', () => {
-            row.style.transform = 'translateY(0)';
-            row.style.boxShadow = 'none';
-        });
     });
 
     // Destination search functionality
