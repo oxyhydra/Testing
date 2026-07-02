@@ -941,9 +941,55 @@
                 transform: none !important;
             }
         }
+        #fullscreenPrompt{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.85);
+    backdrop-filter:blur(10px);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999999;
+}
+
+.fullscreen-box{
+    text-align:center;
+    color:white;
+}
+
+.fullscreen-box h1{
+    margin-bottom:15px;
+    font-size:40px;
+}
+
+.fullscreen-box p{
+    margin-bottom:25px;
+    opacity:.8;
+}
+
+.fullscreen-box button{
+    padding:14px 35px;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
+    background:#1f6f54;
+    color:white;
+    cursor:pointer;
+}
+
+.fullscreen-box button:hover{
+    transform:scale(1.05);
+}
     </style>
 </head>
 <body>
+    <div id="fullscreenPrompt">
+    <div class="fullscreen-box">
+        <h1>Welcome</h1>
+        <p>Click below to continue</p>
+        <button id="enterFullscreen">Enter Website</button>
+    </div>
+</div>
     <!-- Header -->
     <div class="header">
         <div class="route-selector">
@@ -1720,6 +1766,17 @@
     </div>
 
     <script>
+        const enterBtn = document.getElementById("enterFullscreen");
+
+enterBtn.addEventListener("click", async () => {
+    try {
+        await document.documentElement.requestFullscreen();
+    } catch (e) {
+        console.log(e);
+    }
+
+    document.getElementById("fullscreenPrompt").style.display = "none";
+});
     // Swipe functionality
     let currentSlide = 0;
     const swipeWrapper = document.getElementById('swipeWrapper');
