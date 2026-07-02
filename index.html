@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Onederz Siem Reap Timetable</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* CSS */
+        :root {
+            --ink: #14181f;
+            --ink-soft: #4b5262;
+            --muted: #8a90a0;
+            --line: #e7e9ee;
+            --surface: #ffffff;
+            --bg: #f4f5f7;
+            --accent: #1f6f54;
+            --accent-soft: #e6f1ec;
+            --accent-ink: #14503c;
+            --night: #2b2f3a;
+            --night-soft: #eceef2;
+            --border-radius: 14px;
+            --border-radius-sm: 8px;
+            --shadow: 0 1px 2px rgba(20,24,31,0.04), 0 8px 24px rgba(20,24,31,0.06);
+            --shadow-sm: 0 1px 3px rgba(20,24,31,0.06);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        p, span, div, td {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+        }
+
+        .container {
+            margin: 84px 0 0 0;
+            width: 100%;
+            max-width: 980px;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            color: var(--ink);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .route-selector {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .route-badge {
+            background: var(--accent-soft);
+            color: var(--accent-ink);
+            border-radius: 10px;
+            padding: 9px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .route-badge i.fa-map-marker-alt { color: var(--accent); }
+        .route-badge i.fa-arrow-right { color: var(--muted); font-size: 0.8rem; }
+
+        #currentDestination {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .destination-select {
+            padding: 10px 16px;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Search Destination */
+        .destination-search {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 10px 16px 10px 40px;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--line);
+            background: var(--bg);
+            color: var(--ink-soft);
+            font-weight: 500;
+            cursor: pointer;
+            width: 210px;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            width: 250px;
+            outline: none;
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--muted);
+            pointer-events: none;
+            font-size: 0.9rem;
+        }
+
+        .destination-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            min-width: 220px;
+            background: var(--surface);
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line);
+            margin-top: 8px;
+            height: auto;
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1001;
+        }
+
+        .destination-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+            font-size: 0.92rem;
+            font-weight: 500;
+        }
+
+        .destination-option:hover {
+            background: var(--accent-soft);
+        }
+
+        .destination-option i {
+            color: var(--accent);
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Swipe container */
+        .swipe-container {
+            margin-top: 0;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .swipe-wrapper {
+            display: flex;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+
+        .destination-section {
+            min-width: 100%;
+            flex-shrink: 0;
+            transition: opacity 0.3s ease;
+            position: relative;
+            padding-top: 0px;
+            margin-bottom: 0px;
+        }
+
+        .destination-bg {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            opacity: 1;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .destination-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: var(--border-radius);
+            background: linear-gradient(180deg, rgba(20,24,31,0) 40%, rgba(20,24,31,0.45) 100%);
+        }
+
+        .destination-content {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .destination-badge {
+            background: var(--surface);
+            color: var(--ink);
+            padding: 4px 10px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.8rem;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        /* Swipe navigation dots */
+        .swipe-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 24px 0 4px;
+            position: static;
+            left: auto;
+            transform: none;
+            bottom: auto;
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .swipe-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--line);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .swipe-dot.active {
+            background-color: var(--accent);
+            transform: scale(1.3);
+        }
+
+        /* Swipe navigation arrows */
+        .swipe-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            pointer-events: all;
+            transition: var(--transition);
+        }
+
+        .swipe-arrow:hover {
+            border-color: var(--accent);
+        }
+
+        .prev-arrow { left: 15px; }
+        .next-arrow { right: 15px; }
+
+        .swipe-arrow i {
+            color: var(--ink);
+            font-size: 1rem;
+        }
+
+        /* Main content */
+        .content { padding: 0px; }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i { color: var(--accent); }
+
+        .timetable { margin-bottom: 24px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--line);
+            background: var(--surface);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+
+        .table-scale {
+            animation: scaleIn 0.35s ease forwards;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0.98); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        thead {
+            background: var(--bg);
+            color: var(--ink-soft);
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--line);
+        }
+
+        th i { color: var(--muted); margin-right: 4px; }
+
+        tbody tr {
+            border-bottom: 1px solid var(--line);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+
+        tbody { background: var(--surface); }
+
+        td { padding: 16px; vertical-align: middle; }
+
+        .transport-type {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--ink);
+            width: 280px;
+        }
+
+        .transport-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .transport-sub {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .departure-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 300px;
+        }
+
+        .departure-time {
+            font-weight: 600;
+            color: var(--ink);
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            background: var(--bg);
+            border-radius: var(--border-radius-sm);
+            min-width: 76px;
+            text-align: center;
+        }
+
+        .duration {
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .duration i { color: var(--muted); }
+
+        .price {
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: var(--ink);
+        }
+
+        .view-btn {
+            background: var(--surface);
+            color: var(--accent-ink);
+            border: 1px solid var(--accent);
+            padding: 7px 16px;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .view-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        #koh-rong-heading {
+            margin: 16px 0 10px;
+            padding: 10px 14px;
+            background-color: var(--night);
+            color: white;
+            font-weight: 600;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+        }
+
+        /* night buses */
+        .night-table {
+            margin-top: 0px;
+            padding-top: 20px;
+        }
+
+        .night-badge {
+            background: var(--night);
+            color: white;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .hidden { display: none; }
+
+        /* Popup Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(20, 24, 31, 0.55);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.25s ease forwards;
+        }
+
+        .modal-content {
+            background-color: var(--surface);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 760px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.96);
+            opacity: 0;
+            animation: modalSlideIn 0.25s ease forwards;
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            background: var(--surface);
+            color: var(--ink);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--line);
+            transform: none;
+            opacity: 1;
+            animation: none;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover { color: var(--ink); }
+
+        .modal-body {
+            display: flex;
+            padding: 0;
+            opacity: 1;
+            animation: none;
+        }
+
+        .bus-image {
+            flex: 1;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid var(--line);
+            transform: none;
+            opacity: 1;
+            animation: none;
+        }
+
+        .bus-images-container {
+            display: block;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .bus-image-row {
+            display: block;
+            gap: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .bus-image-item {
+            flex: 1;
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+            transform: scale(0.97);
+            opacity: 0;
+            animation: zoomIn 0.35s ease forwards;
+        }
+
+        .bus-details {
+            flex: 1;
+            padding: 22px;
+            transform: none;
+            opacity: 1;
+            animation: none;
+        }
+
+        .facilities-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: var(--ink);
+            transform: none;
+            opacity: 1;
+            animation: none;
+        }
+
+        .facilities-list { list-style-type: none; }
+
+        .facility-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            border-radius: var(--border-radius-sm);
+            background: var(--bg);
+            transform: none;
+            opacity: 0;
+            animation: fadeInUp 0.3s ease forwards;
+        }
+
+        .facility-item:nth-child(1) { animation-delay: 0.05s; }
+        .facility-item:nth-child(2) { animation-delay: 0.08s; }
+        .facility-item:nth-child(3) { animation-delay: 0.11s; }
+        .facility-item:nth-child(4) { animation-delay: 0.14s; }
+        .facility-item:nth-child(5) { animation-delay: 0.17s; }
+        .facility-item:nth-child(6) { animation-delay: 0.2s; }
+        .facility-item:nth-child(7) { animation-delay: 0.23s; }
+
+        .facility-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            transform: none;
+            animation: none;
+        }
+
+        /* Modal Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: scale(0.96); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(6px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.97); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(6px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal.closing {
+            animation: fadeOut 0.2s ease forwards;
+        }
+
+        .modal.closing .modal-content {
+            animation: modalSlideOut 0.2s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes modalSlideOut {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(0.96); opacity: 0; }
+        }
+
+        /* Responsive design for bus images */
+        @media (max-width: 768px) {
+            .bus-image-row { flex-direction: column; }
+            .bus-image-item { flex: none; width: 100%; }
+        }
+
+        /* responsive */
+        @media (max-width: 900px) {
+            .header { padding: 14px 16px; }
+
+            .route-selector {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .route-selector > .route-badge { width: 100%; }
+            .destination-search { width: 100%; }
+            .search-input { width: 100%; }
+            .search-input:focus { width: 100%; }
+            .departure-times { justify-content: flex-start; }
+            .modal-body { flex-direction: column; }
+
+            .bus-image {
+                border-right: none;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .swipe-arrow { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .container { margin-top: 128px; }
+            .header { padding: 12px; }
+            .content { padding: 0; }
+
+            table { display: block; overflow-x: auto; }
+
+            .transport-type {
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                width: auto;
+            }
+
+            .destination-bg { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="route-selector">
+            <div class="route-badge">
+                <i class="fas fa-map-marker-alt"></i>
+                Siem Reap <i class="fas fa-arrow-right"></i> <span id="currentDestination">Phnom Penh</span>
+            </div>
+            <div class="destination-search">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+    type="button" 
+    class="search-input" 
+    id="destinationSearch" 
+    value="Find Destination">
+
+                <div class="destination-dropdown" id="destinationDropdown">
+                    <div class="destination-option" data-value="phnom-penh">
+                        <i class="fas fa-city"></i>
+                        Phnom Penh
+                    </div>
+                    <div class="destination-option" data-value="battambang">
+                        <i class="fas fa-landmark"></i>
+                        Battambang
+                    </div>
+                    <div class="destination-option" data-value="sihanoukville">
+                        <i class="fas fa-umbrella-beach"></i>
+                        Sihanoukville
+                    </div>
+                    <div class="destination-option" data-value="kampot">
+                        <i class="fas fa-mountain"></i>
+                        Kampot
+                    </div>
+                    <div class="destination-option" data-value="preah-vihear">
+                        <i class="fas fa-gopuram"></i>
+                        Preah Vihear
+                    </div>
+                    <div class="destination-option" data-value="stueng-treng">
+                        <i class="fas fa-water"></i>
+                        Stueng Treng
+                    </div>
+                    <div class="destination-option" data-value="rattanakiri">
+                        <i class="fas fa-tree"></i>
+                        Rattanakiri
+                    </div>
+                    <div class="destination-option" data-value="mondulkiri">
+                        <i class="fas fa-leaf"></i>
+                        Mondulkiri
+                    </div>
+                    <div class="destination-option" data-value="siem-reap-airport">
+                        <i class="fas fa-plane-departure"></i>
+                        Siem Reap Airport
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" role="main" aria-label="Onederz Siem Reap timetable">
+        <div class="content">
+            <!-- Swipe Container -->
+            <div class="swipe-container">
+                <div class="swipe-arrows">
+                    <div class="swipe-arrow prev-arrow">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="swipe-arrow next-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                
+                <div class="swipe-wrapper" id="swipeWrapper">
+                    <!-- Phnom Penh Destination -->
+                    <div class="destination-section" id="phnom-penh-section">
+                        <div class="destination-bg" style="background-image: url('img/phnom-penh.jpg');"></div>
+                        <div class="destination-content">
+                            <!-- Daytime Buses -->
+                            <table aria-describedby="daytime-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Universe Luxury 41 seats -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>
+                                                    Universe Luxury <span class="transport-sub">41 Seats • AC • Toilet • WiFi</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">08:45 AM</div>
+                                                <div class="departure-time">09:45 AM</div>
+                                                <div class="departure-time">12:30 PM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 6 Hours</td>
+                                        <td class="price">$17.00</td>
+                                        <td><button class="view-btn" data-bus="universe">View</button></td>
+                                    </tr>
+
+                                    <!-- VET Air Bus 41 seats -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>VET Air Bus <span class="transport-sub">41 Seats • AC • Entertainment • WiFi</span></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">08:00 AM</div>
+                                                <div class="departure-time">01:45 PM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 6 Hours</td>
+                                        <td class="price">$16.50</td>
+                                        <td><button class="view-btn" data-bus="vet">View</button></td>
+                                    </tr>
+
+                                    <!-- Luxury Van 11-13 seats -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-shuttle-van"></i>
+                                                </div>
+                                                <div>Luxury Van <span class="transport-sub">11–13 Seats • Private • Flexible</span></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">09:30 AM</div>
+                                                <div class="departure-time">11:00 AM</div>
+                                                <div class="departure-time">01:00 PM</div>
+                                                <div class="departure-time">03:00 PM</div>
+                                                <div class="departure-time">05:00 PM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 6 Hours</td>
+                                        <td class="price">$14.50</td>
+                                        <td><button class="view-btn" data-bus="van">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Night Buses -->
+                            <div class="night-table" id="night-wrapper">
+                                <table aria-describedby="night-heading">
+                                    <thead>
+                                        <tr>
+                                            <th><i class="fas fa-bed"></i> Transport Type</th>
+                                            <th><i class="fas fa-clock"></i> Departure</th>
+                                            <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                            <th><i class="fas fa-tag"></i> Price</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Kia Grandbird -->
+                                        <tr>
+                                            <td>
+                                                <div class="transport-type">
+                                                    <div class="transport-icon">
+                                                        <i class="fas fa-bed"></i>
+                                                    </div>
+                                                    <div>Kia Grandbird <span class="transport-sub">30 Beds • Sleeper • No pick-up</span></div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="departure-times">
+                                                    <div class="departure-time">10:00 PM</div>
+                                                    <div class="departure-time">10:30 PM</div>
+                                                </div>
+                                            </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 6 Hours</td>
+                                            <td class="price">$19.00</td>
+                                            <td><button class="view-btn" data-bus="grandbird">View</button></td>
+                                        </tr>
+
+                                        <!-- Luxury Hotel Bus -->
+                                        <tr>
+                                            <td>
+                                                <div class="transport-type">
+                                                    <div class="transport-icon">
+                                                        <i class="fas fa-hotel"></i>
+                                                    </div>
+                                                    <div>Luxury Hotel Bus <span class="transport-sub">29 Beds • Sleeper • Comfort</span></div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="departure-times">
+                                                    <div class="departure-time">11:30 PM</div>
+                                                    </div>
+                                            </td>
+                                            <td class="duration"><i class="fas fa-clock"></i> 6 Hours</td>
+                                            <td class="price">$17.00</td>
+                                            <td><button class="view-btn" data-bus="hotel">View</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Battambang Destination -->
+                    <div class="destination-section" id="battambang-section">
+                        <div class="destination-bg" style="background-image: url('img/battambang.jpg');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="battambang-heading">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                        <th><i class="fas fa-clock"></i> Departure</th>
+                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                        <th><i class="fas fa-tag"></i> Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-shuttle-van"></i>
+                                </div>
+                                <div>
+                                    Universe County <span class="transport-sub">21 Seats • AC</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">08:30 AM</div>
+                                <div class="departure-time">01:30 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 3 Hours</td>
+                        <td class="price">$10.00</td>
+                        <td><button class="view-btn" data-bus="ucounty">View</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bus-alt"></i>
+                                </div>
+                                <div>
+                                    Luxury Coaster <span class="transport-sub">16 Seats • AC • Premium</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">07:00 AM</div>
+                                <div class="departure-time">11:00 AM</div>
+                                <div class="departure-time">05:00 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 3 Hours</td>
+                        <td class="price">$10.00</td>
+                        <td><button class="view-btn" data-bus="lcoaster">View</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bus"></i>
+                                </div>
+                                <div>
+                                    Reak Smey Bus <span class="transport-sub">41 Seats • AC</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">08:30 AM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 3 Hours</td>
+                        <td class="price">$12.00</td>
+                        <td><button class="view-btn" data-bus="rsbus">View</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-ship"></i>
+                                </div>
+                                <div>
+                                    Sok Chamruen Boat <span class="transport-sub">Scenic Route • Water Transport</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">07:30 AM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 7 Hours</td>
+                        <td class="price">$30.00</td>
+                        <td><button class="view-btn" data-bus="scboat">View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sihanoukville Destination -->
+                    <div class="destination-section" id="sihanoukville-section">
+            <div class="destination-bg" style="background-image: url('img/sihanoukville.webp');"></div>
+            <div class="destination-content">
+                
+
+            <table aria-describedby="sihanoukville-night-heading">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-bed"></i> Transport Type</th>
+                        <th><i class="fas fa-clock"></i> Departure</th>
+                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                        <th><i class="fas fa-tag"></i> Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <div>
+                                    Kia Grandbird <span class="transport-sub">30 Beds • Sleeper • Toilet • No Pick-up</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">10:00 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 11 Hours</td>
+                        <td class="price">$32.00</td>
+                        <td><button class="view-btn" data-bus="kiabird">View</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <div>
+                                    Hotel Bus <span class="transport-sub">40 Beds • Hotel Style • Toilet</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">08:00 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 11 Hours</td>
+                        <td class="price">$17.00</td>
+                        <td><button class="view-btn" data-bus="hotelbus">View</button></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <div>
+                                    Luxury Bus <span class="transport-sub">30 Beds • Sleeper • Toilet</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">07:30 PM</div>
+                                <div class="departure-time">08:30 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 11 Hours</td>
+                        <td class="price">$19.50</td>
+                        <td><button class="view-btn" data-bus="luxurybus">View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+                <h3 id="koh-rong-heading">Package Bus and Ferry (From Sihanoukville to Koh Rong or Koh Rong Sanloem)</h3>
+                <table aria-describedby="koh-rong-heading">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-route"></i> Transport Details</th>
+                            <th><i class="fas fa-clock"></i> Departure</th>
+                            <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                            <th><i class="fas fa-tag"></i> Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="transport-type">
+                                    <div class="transport-icon">
+                                        <i class="fas fa-bus-alt"></i>
+                                    </div>
+                                    <div>
+                                        Luxury Bus <span class="transport-sub">30 Beds • Night Bus to Sihanoukville</span>
+                                    </div>
+                                </div>
+                                <hr class="transport-separator">
+                                <div class="transport-type">
+                                    <div class="transport-icon">
+                                        <i class="fas fa-ship"></i>
+                                    </div>
+                                    <div>
+                                        Buva Sea Ferry <span class="transport-sub">Fast Ferry to Koh Rong / Sanloem (Return)</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="departure-times">
+                                    <div class="departure-time"><i class="fas fa-sign-out-alt"></i> Bus Dep: 08:30 PM (Night)</div>
+                                    <div class="departure-time"><i class="fas fa-sign-in-alt"></i> Ferry Dep: 08:30 AM (Next Morning)</div>
+                                </div>
+                            </td>
+                            <td class="duration"><i class="fas fa-clock"></i> 13 Hours</td>
+                            <td class="price" style="position: relative;">$44.50<font style="font-size: 0.8em; font-weight: 500; position: absolute; bottom: 5px; left: 0; width: 150px;">(Price included with return ferry)</font></td>
+                            <td><button class="view-btn" data-package="krh-package">View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+
+
+            </div>
+
+                    </div>
+
+                    <!-- Kampot Destination -->
+                    <div class="destination-section" id="kampot-section">
+                        <div class="destination-bg" style="background-image: url('img/kampot.webp');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="kampot-daytime-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Mountain Express -->
+                                    <tr>
+                        <td>
+                            <div class="transport-type">
+                                <div class="transport-icon">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <div>
+                                    Kia Grandbird <span class="transport-sub">30 Beds • Sleeper • Toilet • No Pick-up</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="departure-times">
+                                <div class="departure-time">10:30 PM</div>
+                            </div>
+                        </td>
+                        <td class="duration"><i class="fas fa-clock"></i> 10 Hours</td>
+                        <td class="price">$25.00</td>
+                        <td><button class="view-btn" data-bus="kiabird">View</button></td>
+                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Preah Vihear Destination -->
+                    <div class="destination-section" id="preah-vihear-section">
+                        <div class="destination-bg" style="background-image: url('img/preahvihear.jpg');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="preah-vihear-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Temple Explorer -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>
+                                                    Luxury Coaster <span class="transport-sub">16 Seats • AC </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">09:00 AM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 3 Hours</td>
+                                        <td class="price">$10.00</td>
+                                        <td><button class="view-btn" data-bus="vet">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Stueng Treng Destination -->
+                    <div class="destination-section" id="stueng-treng-section">
+                        <div class="destination-bg" style="background-image: url('img/Stungtreng.webp');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="stueng-treng-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Temple Explorer -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>
+                                                    Air Bus <span class="transport-sub">35 Seats • AC </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">09:00 AM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 5 Hours</td>
+                                        <td class="price">$16.00</td>
+                                        <td><button class="view-btn" data-bus="vet">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Rattanakiri Destination -->
+                    <div class="destination-section" id="rattanakiri-section">
+                        <div class="destination-bg" style="background-image: url('img/Ratanakiri.jpg');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="rattanakiri-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Temple Explorer -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>
+                                                    Luxury Coaster <span class="transport-sub">16 Seats • AC </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">07:30 AM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 8 Hours</td>
+                                        <td class="price">$17.00</td>
+                                        <td><button class="view-btn" data-bus="vet">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Mondulkiri Destination -->
+                    <div class="destination-section" id="mondulkiri-section">
+                        <div class="destination-bg" style="background-image: url('img/mondulkiri.jpg');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="mondulkiri-heading">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-bus"></i> Transport Type</th>
+                                        <th><i class="fas fa-clock"></i> Departure</th>
+                                        <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                                        <th><i class="fas fa-tag"></i> Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Temple Explorer -->
+                                    <tr>
+                                        <td>
+                                            <div class="transport-type">
+                                                <div class="transport-icon">
+                                                    <i class="fas fa-bus"></i>
+                                                </div>
+                                                <div>
+                                                    Air Bus <span class="transport-sub">35 Seats • AC </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="departure-times">
+                                                <div class="departure-time">08:00 AM</div>
+                                            </div>
+                                        </td>
+                                        <td class="duration"><i class="fas fa-clock"></i> 12 Hours</td>
+                                        <td class="price">$22.00</td>
+                                        <td><button class="view-btn" data-bus="vet">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Siem Reap Airport Destination -->
+                    <div class="destination-section" id="siem-reap-airport-section">
+                        <div class="destination-bg" style="background-image: url('img/siemreap-airport.jpg');"></div>
+                        <div class="destination-content">
+                            <table aria-describedby="siem-reap-airport-heading">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-bus"></i> Transport Type</th>
+                            <th><i class="fas fa-clock"></i> Departure</th>
+                            <th><i class="fas fa-hourglass-half"></i> Duration</th>
+                            <th><i class="fas fa-tag"></i> Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="transport-type">
+                                    <div class="transport-icon">
+                                        <i class="fas fa-bus-alt"></i>
+                                    </div>
+                                    <div>
+                                        Universe luxury <span class="transport-sub">41 Seats • Airport Bus</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="departure-times">
+                                    <div class="departure-time">05:30 AM</div>
+                                    <div class="departure-time">07:00 AM</div>
+                                    <div class="departure-time">08:00 AM</div>
+                                    <div class="departure-time">10:00 AM</div>
+                                    <div class="departure-time">12:00 PM</div>
+                                    <div class="departure-time">01:30 PM</div>
+                                    <div class="departure-time">03:00 PM</div>
+                                    <div class="departure-time">04:00 PM</div>
+                                    <div class="departure-time">05:30 PM</div>
+                                    <div class="departure-time">07:00 PM</div>
+                                </div>
+                            </td>
+                            <td class="duration"><i class="fas fa-clock"></i> 1 Hour</td>
+                            <td class="price">$08.00</td>
+                            <td><button class="view-btn" data-bus="unilux">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="transport-type">
+                                    <div class="transport-icon">
+                                        <i class="fas fa-car"></i>
+                                    </div>
+                                    <div>
+                                        Private Taxi <span class="transport-sub">3 - 4 people</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="departure-times">
+                                    <div class="departure-time">-- -- Time on your choice</div>
+                                </div>
+                            </td>
+                            <td class="duration"><i class="fas fa-clock"></i> 1 Hour</td>
+                            <td class="price">$27.00</td>
+                            <td><button class="view-btn" data-bus="private-car">View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Swipe Indicators -->
+            <div class="swipe-indicators" id="swipeIndicators">
+                <!-- Dots will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="modal" id="busModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Bus Details</div>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="bus-image">
+                    <div class="bus-images-container" id="busImagesContainer">
+                        <!-- Images will be added dynamically -->
+                    </div>
+                    <div class="bus-info">
+                        <h3 id="busName">Bus Name</h3>
+                        <p id="busDescription">Bus description goes here</p>
+                    </div>
+                </div>
+                <div class="bus-details">
+                    <div class="facilities-title">
+                        <i class="fas fa-concierge-bell"></i> Facilities & Amenities
+                    </div>
+                    <ul class="facilities-list" id="facilitiesList">
+                        <!-- Facilities will be added dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Swipe functionality
+    let currentSlide = 0;
+    const swipeWrapper = document.getElementById('swipeWrapper');
+    const destinationSections = document.querySelectorAll('.destination-section');
+    const totalSlides = destinationSections.length;
+    const swipeIndicators = document.getElementById('swipeIndicators');
+    const currentDestination = document.getElementById('currentDestination');
+    const destinationOptions = document.querySelectorAll('.destination-option');
+    
+    // Create swipe indicators
+    function createIndicators() {
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'swipe-dot';
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            swipeIndicators.appendChild(dot);
+        }
+    }
+    
+    // Go to specific slide
+    function goToSlide(slideIndex) {
+        if (slideIndex < 0) slideIndex = totalSlides - 1;
+        if (slideIndex >= totalSlides) slideIndex = 0;
+        
+        currentSlide = slideIndex;
+        swipeWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+        // Update indicators
+        document.querySelectorAll('.swipe-dot').forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+        
+        // Update current destination text
+        const destinationText = destinationOptions[currentSlide].textContent.trim();
+        currentDestination.textContent = destinationText;
+        
+        // Trigger table scale animation
+        animateTables();
+    }
+    
+    // Table scale animation
+    function animateTables() {
+        // Get all tables in the current slide
+        const currentSection = destinationSections[currentSlide];
+        const tables = currentSection.querySelectorAll('table');
+        
+        // Remove animation class if it exists
+        tables.forEach(table => {
+            table.classList.remove('table-scale');
+        });
+        
+        // Add animation class after a small delay
+        setTimeout(() => {
+            tables.forEach(table => {
+                table.classList.add('table-scale');
+            });
+        }, 50);
+    }
+    
+    // Next slide
+    function nextSlide() {
+        goToSlide(currentSlide + 1);
+    }
+    
+    // Previous slide
+    function prevSlide() {
+        goToSlide(currentSlide - 1);
+    }
+    
+    // Initialize swipe functionality
+    function initSwipe() {
+        createIndicators();
+        
+        // Add event listeners for arrow buttons
+        document.querySelector('.prev-arrow').addEventListener('click', prevSlide);
+        document.querySelector('.next-arrow').addEventListener('click', nextSlide);
+        
+        // Touch swipe functionality
+        let startX = 0;
+        let endX = 0;
+        let isSwiping = false;
+        
+        swipeWrapper.addEventListener('touchstart', (e) => {
+            // Only start swipe if not on a button
+            if (!e.target.closest('.view-btn')) {
+                startX = e.touches[0].clientX;
+                isSwiping = true;
+            }
+        });
+        
+        swipeWrapper.addEventListener('touchmove', (e) => {
+            if (isSwiping) {
+                endX = e.touches[0].clientX;
+            }
+        });
+        
+        swipeWrapper.addEventListener('touchend', () => {
+            if (isSwiping) {
+                const diffX = startX - endX;
+                const minSwipeDistance = 50;
+                
+                if (Math.abs(diffX) > minSwipeDistance) {
+                    if (diffX > 0) {
+                        // Swiped left
+                        nextSlide();
+                    } else {
+                        // Swiped right
+                        prevSlide();
+                    }
+                }
+                isSwiping = false;
+            }
+        });
+        
+        // Mouse swipe functionality
+        let mouseStartX = 0;
+        let mouseEndX = 0;
+        let isMouseSwiping = false;
+        
+        swipeWrapper.addEventListener('mousedown', (e) => {
+            // Only start swipe if not clicking a button
+            if (!e.target.closest('.view-btn')) {
+                mouseStartX = e.clientX;
+                isMouseSwiping = true;
+            }
+        });
+        
+        swipeWrapper.addEventListener('mousemove', (e) => {
+            if (isMouseSwiping) {
+                mouseEndX = e.clientX;
+            }
+        });
+        
+        swipeWrapper.addEventListener('mouseup', (e) => {
+            if (isMouseSwiping) {
+                const diffX = mouseStartX - mouseEndX;
+                const minSwipeDistance = 50;
+                
+                if (Math.abs(diffX) > minSwipeDistance) {
+                    if (diffX > 0) {
+                        // Swiped left
+                        nextSlide();
+                    } else {
+                        // Swiped right
+                        prevSlide();
+                    }
+                }
+                isMouseSwiping = false;
+            }
+        });
+        
+        // Prevent mouse swipe from interfering with clicks
+        swipeWrapper.addEventListener('mouseleave', () => {
+            isMouseSwiping = false;
+        });
+    }
+
+    // Bus data for the modal - ALL buses now have two images
+    const busData = {
+        universe: {
+            name: "Universe Luxury",
+            description: "41-seat luxury bus with premium amenities for a comfortable journey",
+            images: [
+                "img/giantbus.png",
+                "img/giantbus.png"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-wifi", text: "Free WiFi" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-tv", text: "Entertainment System" },
+                { icon: "fas fa-chair", text: "Reclining Seats" },
+                { icon: "fas fa-plug", text: "Power Outlets" },
+                { icon: "fas fa-glass-whiskey", text: "Complimentary Water" }
+            ]
+        },
+        vet: {
+            name: "VET Air Bus",
+            description: "41-seat air-conditioned bus with entertainment and WiFi",
+            images: [
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1544627872-3c2dfa000a1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-wifi", text: "Free WiFi" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-tv", text: "Entertainment System" },
+                { icon: "fas fa-chair", text: "Reclining Seats" },
+                { icon: "fas fa-suitcase-rolling", text: "Luggage Storage" }
+            ]
+        },
+        van: {
+            name: "Luxury Van",
+            description: "Private 11-13 seat van with flexible pick-up options",
+            images: [
+                "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-user-friends", text: "Private Group" },
+                { icon: "fas fa-map-marker-alt", text: "Flexible Pick-up" },
+                { icon: "fas fa-mobile-alt", text: "Charging Ports" },
+                { icon: "fas fa-clock", text: "Flexible Schedule" }
+            ]
+        },
+        grandbird: {
+            name: "Kia Grandbird",
+            description: "30-bed sleeper bus for overnight journeys",
+            images: [
+                "https://images.unsplash.com/photo-1570125909237-8c5c8d0f5c7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-bed", text: "Sleeper Beds" },
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-blanket", text: "Blankets Provided" },
+                { icon: "fas fa-luggage-cart", text: "Luggage Storage" },
+                { icon: "fas fa-moon", text: "Overnight Service" }
+            ]
+        },
+        hotel: {
+            name: "Luxury Hotel Bus",
+            description: "29-bed luxury sleeper bus with hotel-like amenities",
+            images: [
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1570125909237-8c5c8d0f5c7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-bed", text: "Sleeper Beds" },
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-blanket", text: "Premium Blankets" },
+                { icon: "fas fa-pillow", text: "Comfortable Pillows" },
+                { icon: "fas fa-concierge-bell", text: "Hotel-like Service" }
+            ]
+        },
+        ucounty: {
+            name: "Universe County",
+            description: "21-seat comfortable bus for shorter journeys",
+            images: [
+                "https://images.unsplash.com/photo-1544627872-3c2dfa000a1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-chair", text: "Comfortable Seats" },
+                { icon: "fas fa-suitcase-rolling", text: "Luggage Storage" }
+            ]
+        },
+        lcoaster: {
+            name: "Luxury Coaster",
+            description: "16-seat premium coaster for comfortable travel",
+            images: [
+                "https://images.unsplash.com/photo-1544627872-3c2dfa000a1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-chair", text: "Premium Seats" },
+                { icon: "fas fa-mobile-alt", text: "Charging Ports" }
+            ]
+        },
+        kiabird: {
+            name: "Kia Grandbird",
+            description: "30-bed sleeper bus for overnight coastal journeys",
+            images: [
+                "https://images.unsplash.com/photo-1570125909237-8c5c8d0f5c7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-bed", text: "Sleeper Beds" },
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-blanket", text: "Blankets Provided" },
+                { icon: "fas fa-umbrella-beach", text: "Beach Destination" }
+            ]
+        },
+        hotelbus: {
+            name: "Hotel Bus",
+            description: "40-bed hotel style bus for comfortable overnight travel",
+            images: [
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1570125909237-8c5c8d0f5c7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-bed", text: "Sleeper Beds" },
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-concierge-bell", text: "Hotel-like Service" }
+            ]
+        },
+        luxurybus: {
+            name: "Luxury Bus",
+            description: "30-bed luxury sleeper bus with premium amenities",
+            images: [
+                "https://images.unsplash.com/photo-1570125909237-8c5c8d0f5c7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-bed", text: "Sleeper Beds" },
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-restroom", text: "Onboard Toilet" },
+                { icon: "fas fa-blanket", text: "Premium Blankets" }
+            ]
+        },
+        unilux: {
+            name: "Universe Luxury Airport Bus",
+            description: "41-seat luxury bus for airport transfers",
+            images: [
+                "https://images.unsplash.com/photo-1544627872-3c2dfa000a1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-wifi", text: "Free WiFi" },
+                { icon: "fas fa-luggage-cart", text: "Luggage Storage" },
+                { icon: "fas fa-plane", text: "Airport Service" }
+            ]
+        },
+        "private-car": {
+            name: "Private Taxi",
+            description: "Private car service for 3-4 people",
+            images: [
+                "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            ],
+            facilities: [
+                { icon: "fas fa-snowflake", text: "Air Conditioning" },
+                { icon: "fas fa-user-friends", text: "Private Group" },
+                { icon: "fas fa-clock", text: "Flexible Schedule" },
+                { icon: "fas fa-map-marker-alt", text: "Door-to-Door Service" }
+            ]
+        }
+    };
+
+    // Modal elements
+    const modal = document.getElementById('busModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const busImagesContainer = document.getElementById('busImagesContainer');
+    const busName = document.getElementById('busName');
+    const busDescription = document.getElementById('busDescription');
+    const facilitiesList = document.getElementById('facilitiesList');
+    const closeModal = document.getElementById('closeModal');
+    
+    // View button functionality
+    function setupViewButtons() {
+        // Remove all existing event listeners
+        document.querySelectorAll('.view-btn').forEach(button => {
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+        });
+        
+        // Add fresh event listeners to all view buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const busType = this.getAttribute('data-bus');
+                const bus = busData[busType];
+                
+                if (bus) {
+                    // Update modal content
+                    modalTitle.textContent = bus.name;
+
+                    // Clear and populate bus images container
+                    busImagesContainer.innerHTML = '';
+                    
+                    // Create image row
+                    const imageRow = document.createElement('div');
+                    imageRow.className = 'bus-image-row';
+                    
+                    // Add two images
+                    bus.images.forEach((imageSrc, index) => {
+                        const img = document.createElement('img');
+                        img.src = imageSrc;
+                        img.alt = `${bus.name} ${index === 0 ? 'exterior' : 'interior'}`;
+                        img.className = 'bus-image-item';
+                        img.style.animationDelay = `${0.5 + (index * 0.1)}s`;
+                        imageRow.appendChild(img);
+                    });
+                    
+                    busImagesContainer.appendChild(imageRow);
+                    
+                    busName.textContent = bus.name;
+                    busDescription.textContent = bus.description;
+                    
+                    // Clear and populate facilities list
+                    facilitiesList.innerHTML = '';
+                    bus.facilities.forEach((facility, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'facility-item';
+                        li.style.animationDelay = `${0.7 + (index * 0.05)}s`;
+                        li.innerHTML = `
+                            <div class="facility-icon" style="animation-delay: ${0.75 + (index * 0.05)}s">
+                                <i class="${facility.icon}"></i>
+                            </div>
+                            <span>${facility.text}</span>
+                        `;
+                        facilitiesList.appendChild(li);
+                    });
+                    
+                    // Show modal with animation
+                    modal.style.display = 'flex';
+                    modal.classList.remove('closing');
+                    
+                    // Reset animations for next time
+                    setTimeout(() => {
+                        const elements = modal.querySelectorAll('[style*="animation"]');
+                        elements.forEach(el => {
+                            el.style.animation = 'none';
+                            void el.offsetWidth; // Trigger reflow
+                            el.style.animation = '';
+                        });
+                    }, 10);
+                }
+            });
+            
+            // Add additional event prevention for mobile
+            button.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+            
+            button.addEventListener('touchend', function(e) {
+                e.stopPropagation();
+            });
+        });
+    }
+
+    // Close modal functionality
+    closeModal.addEventListener('click', function() {
+        modal.classList.add('closing');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('closing');
+        }, 300);
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.classList.add('closing');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('closing');
+            }, 300);
+        }
+    });
+
+    // Row hover effects
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', () => {
+            row.style.transform = 'translateY(0px)';
+            row.style.boxShadow = '0 4px 8px rgba(0,0,0,0.05)';
+        });
+        row.addEventListener('mouseleave', () => {
+            row.style.transform = 'translateY(0)';
+            row.style.boxShadow = 'none';
+        });
+    });
+
+    // Destination search functionality
+    const destinationSearch = document.getElementById('destinationSearch');
+    const destinationDropdown = document.getElementById('destinationDropdown');
+    
+    // Show dropdown when clicking on search input
+    destinationSearch.addEventListener('click', function() {
+        destinationDropdown.style.display = 'block';
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.destination-search')) {
+            destinationDropdown.style.display = 'none';
+        }
+    });
+    
+    // Handle destination selection
+    destinationOptions.forEach((option, index) => {
+        option.addEventListener('click', function() {
+            const destination = this.getAttribute('data-value');
+            const destinationText = this.textContent.trim();
+            
+            // Update the route badge
+            currentDestination.textContent = destinationText;
+            
+            // Reset the search input to "Find Destination"
+            destinationSearch.value = '';
+            destinationSearch.placeholder = 'Find Destination';
+            
+            // Hide the dropdown
+            destinationDropdown.style.display = 'none';
+            
+            // Go to the selected slide
+            goToSlide(index);
+            
+            // Setup view buttons for the new slide
+            setTimeout(setupViewButtons, 100);
+            
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+    
+    // Filter destinations when typing
+    destinationSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        destinationOptions.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                option.style.display = 'flex';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    });
+    
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initSwipe();
+        setupViewButtons();
+        // Trigger initial table animation
+        animateTables();
+    });
+</script>
+</body>
+</html>
